@@ -24,9 +24,9 @@ export async function GET() {
     });
 
     return NextResponse.json(studentTasks);
-  } catch (error: any) {
+  } catch (error: unknown) {
     return NextResponse.json(
-      { error: error.message || "حدث خطأ في جلب المهام" },
+      { error: error || "حدث خطأ في جلب المهام" },
       { status: 401 }
     );
   }

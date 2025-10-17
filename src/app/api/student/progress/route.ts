@@ -49,9 +49,9 @@ export async function GET() {
       completionRate,
       recentTasks,
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     return NextResponse.json(
-      { error: error.message || "حدث خطأ في جلب الإحصائيات" },
+      { error: error || "حدث خطأ في جلب الإحصائيات" },
       { status: 401 }
     );
   }

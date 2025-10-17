@@ -18,9 +18,9 @@ export async function GET() {
     });
 
     return NextResponse.json(students);
-  } catch (error: any) {
+  } catch (error: unknown) {
     return NextResponse.json(
-      { error: error.message || "حدث خطأ في جلب البيانات" },
+      { error: error || "حدث خطأ في جلب المهام" },
       { status: 401 }
     );
   }
@@ -59,9 +59,9 @@ export async function POST(request: Request) {
     });
 
     return NextResponse.json(student);
-  } catch (error: any) {
+  } catch (error: unknown) {
     return NextResponse.json(
-      { error: error.message || "حدث خطأ في إضافة الطالب" },
+      { error: error || "حدث خطأ في إضافة الطالب" },
       { status: 401 }
     );
   }

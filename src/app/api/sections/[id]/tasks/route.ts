@@ -27,9 +27,9 @@ export async function GET(
     });
 
     return NextResponse.json(tasks);
-  } catch (error: any) {
+  } catch (error: unknown) {
     return NextResponse.json(
-      { error: error.message || "حدث خطأ في جلب البيانات" },
+      { error: error || "حدث خطأ في جلب البيانات" },
       { status: 401 }
     );
   }

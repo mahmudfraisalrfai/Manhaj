@@ -71,9 +71,9 @@ export async function GET(
       },
       students,
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     return NextResponse.json(
-      { error: error.message || "حدث خطأ في جلب بيانات التقدم" },
+      { error: error || "حدث خطأ في جلب بيانات التقدم" },
       { status: 401 }
     );
   }

@@ -34,9 +34,9 @@ export async function GET(request: Request) {
     });
 
     return NextResponse.json(sections);
-  } catch (error: any) {
+  } catch (error: unknown) {
     return NextResponse.json(
-      { error: error.message || "حدث خطأ في جلب البيانات" },
+      { error: error || "حدث خطأ في جلب البيانات" },
       { status: 401 }
     );
   }
@@ -74,9 +74,9 @@ export async function POST(request: Request) {
     });
 
     return NextResponse.json(section);
-  } catch (error: any) {
+  } catch (error: unknown) {
     return NextResponse.json(
-      { error: error.message || "حدث خطأ في إضافة القسم" },
+      { error: error || "حدث خطأ في إضافة القسم" },
       { status: 401 }
     );
   }

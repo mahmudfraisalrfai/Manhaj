@@ -26,9 +26,9 @@ export async function GET() {
     });
 
     return NextResponse.json(tasks);
-  } catch (error: any) {
+  } catch (error: unknown) {
     return NextResponse.json(
-      { error: error.message || "حدث خطأ في جلب البيانات" },
+      { error: error || "حدث خطأ في جلب المهام" },
       { status: 401 }
     );
   }
@@ -72,9 +72,9 @@ export async function POST(request: Request) {
     });
 
     return NextResponse.json(task);
-  } catch (error: any) {
+  } catch (error: unknown) {
     return NextResponse.json(
-      { error: error.message || "حدث خطأ في إضافة المهمة" },
+      { error: error || "حدث خطأ في إضافة المهمة" },
       { status: 401 }
     );
   }

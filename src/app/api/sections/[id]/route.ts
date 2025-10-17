@@ -26,9 +26,9 @@ export async function GET(
     }
 
     return NextResponse.json(section);
-  } catch (error: any) {
+  } catch (error: unknown) {
     return NextResponse.json(
-      { error: error.message || "حدث خطأ في جلب البيانات" },
+      { error: error || "حدث خطأ في جلب البيانات" },
       { status: 401 }
     );
   }
@@ -61,9 +61,9 @@ export async function DELETE(
     });
 
     return NextResponse.json({ message: "تم حذف القسم بنجاح" });
-  } catch (error: any) {
+  } catch (error: unknown) {
     return NextResponse.json(
-      { error: error.message || "حدث خطأ في حذف القسم" },
+      { error: error || "حدث خطأ في حذف القسم" },
       { status: 500 }
     );
   }

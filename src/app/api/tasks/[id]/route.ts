@@ -31,11 +31,8 @@ export async function DELETE(
     });
 
     return NextResponse.json({ message: "تم حذف المهمة بنجاح" });
-  } catch (error: any) {
-    return NextResponse.json(
-      { error: error.message || "حدث خطأ في حذف المهمة" },
-      { status: 500 }
-    );
+  } catch (error: unknown) {
+    return NextResponse.json({ error: error || "حدث خطأ" }, { status: 401 });
   }
 }
 
@@ -70,9 +67,9 @@ export async function PATCH(
     });
 
     return NextResponse.json(updatedTask);
-  } catch (error: any) {
+  } catch (error: unknown) {
     return NextResponse.json(
-      { error: error.message || "حدث خطأ في تحديث المهمة" },
+      { error: error || "حدث خطأ في تحديث المهمة" },
       { status: 500 }
     );
   }
@@ -107,9 +104,9 @@ export async function GET(
     }
 
     return NextResponse.json(task);
-  } catch (error: any) {
+  } catch (error: unknown) {
     return NextResponse.json(
-      { error: error.message || "حدث خطأ في جلب البيانات" },
+      { error: error || "حدث خطأ في جلب البيانات" },
       { status: 401 }
     );
   }

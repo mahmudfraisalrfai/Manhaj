@@ -42,9 +42,9 @@ export async function PATCH(
     });
 
     return NextResponse.json(updatedStudentTask);
-  } catch (error: any) {
+  } catch (error: unknown) {
     return NextResponse.json(
-      { error: error.message || "حدث خطأ في تحديث حالة المهمة" },
+      { error: error || "حدث خطأ في تحديث حالة المهمة" },
       { status: 500 }
     );
   }

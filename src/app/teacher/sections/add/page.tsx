@@ -1,12 +1,10 @@
 // app/teacher/sections/add/page.tsx
 "use client";
 import { useState } from "react";
-import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 
 export default function AddSectionPage() {
-  const { data: session } = useSession();
   const router = useRouter();
   const [formData, setFormData] = useState({
     name: "",

@@ -1,6 +1,5 @@
 // app/components/StudentDashboard.tsx
 "use client";
-import { useSession, signOut } from "next-auth/react";
 import Link from "next/link";
 import {
   TasksIcon,
@@ -77,7 +76,7 @@ export default function StudentDashboard() {
               </div>
             </div>
             <div className="flex items-center justify-between opacity-90">
-              <span className="text-sm">قريباً...</span>
+              <span className="text-sm">..قريباً</span>
               <StarIcon className="w-4 h-4" />
             </div>
           </div>

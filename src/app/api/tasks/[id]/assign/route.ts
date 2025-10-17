@@ -62,9 +62,9 @@ export async function POST(
       message: "تم تعيين المهمة بنجاح",
       assignedCount,
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     return NextResponse.json(
-      { error: error.message || "حدث خطأ في تعيين المهمة" },
+      { error: error || "حدث خطأ في تعيين المهمة" },
       { status: 500 }
     );
   }

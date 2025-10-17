@@ -16,9 +16,9 @@ export async function DELETE(
     });
 
     return NextResponse.json({ message: "تم حذف الطالب بنجاح" });
-  } catch (error: any) {
+  } catch (error: unknown) {
     return NextResponse.json(
-      { error: error.message || "حدث خطأ في حذف الطالب" },
+      { error: error || "حدث خطأ في حذف الطالب" },
       { status: 500 }
     );
   }
