@@ -1,0 +1,61 @@
+// prisma/schema.prisma
+generator client {
+    provider = "prisma-client-js"
+}
+
+datasource db {
+    provider = "postgresql"
+    url      = env("DATABASE_URL")
+}
+
+model User {
+    id        String   @id @default(cuid())
+    name      String   @unique
+    password  String
+    role      String
+    createdAt DateTime @default(now())
+
+    sections     Section[]     @relation("TeacherSections")
+    tasks        Task[]        @relation("TeacherTasks")
+    studentTasks StudentTask[]
+}
+
+model Section {
+    id          String   @id @default(cuid())
+    name        String
+    description String?
+    teacherId   String
+    teacher     User     @relation("TeacherSections", fields: [teacherId], references: [id], onDelete: Cascade)
+    tasks       Task[]   @relation("SectionTasks")
+    createdAt   DateTime @default(now())
+}
+
+model Task {
+    id          String    @id @default(cuid())
+    title       String
+    description String?
+    sectionId   String
+    section     Section   @relation("SectionTasks", fields: [sectionId], references: [id], onDelete: Cascade)
+    teacherId   String
+    teacher     User      @relation("TeacherTasks", fields: [teacherId], references: [id], onDelete: Cascade)
+    deadline    DateTime?
+    completed   Boolean   @default(false)
+
+    studentTasks StudentTask[]
+    createdAt    DateTime      @default(now())
+
+    @@unique([title, sectionId])
+}
+
+model StudentTask {
+    id          String    @id @default(cuid())
+    studentId   String
+    student     User      @relation(fields: [studentId], references: [id], onDelete: Cascade)
+    taskId      String
+    task        Task      @relation(fields: [taskId], references: [id], onDelete: Cascade)
+    status      String    @default("pending")
+    submittedAt DateTime?
+    createdAt   DateTime  @default(now())
+
+    @@unique([studentId, taskId])
+}
