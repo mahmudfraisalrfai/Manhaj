@@ -39,6 +39,7 @@ export default function SignIn() {
       }
     } catch (error) {
       alert("حدث خطأ أثناء تسجيل الدخول");
+      console.error("Login error:", error);
     } finally {
       setLoading(false);
     }

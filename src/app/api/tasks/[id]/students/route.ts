@@ -8,7 +8,6 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const session = await requireAuth("teacher");
     const { id } = await params; // أضف await هنا
 
     // جلب جميع الطلاب
@@ -41,9 +40,9 @@ export async function GET(
     }));
 
     return NextResponse.json(studentsWithAssignment);
-  } catch (error: any) {
+  } catch (error: unknown) {
     return NextResponse.json(
-      { error: error.message || "حدث خطأ في جلب البيانات" },
+      { error: error || "حدث خطأ في جلب البيانات" },
       { status: 401 }
     );
   }

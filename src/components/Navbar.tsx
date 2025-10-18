@@ -12,11 +12,7 @@ import {
   UserIcon,
   LogoutIcon,
   MenuIcon,
-  ChevronDownIcon,
-  ChevronUpIcon,
-  BookOpenIcon,
   ChartIcon,
-  TargetIcon,
 } from "@/components/ui/Icon";
 import LoadingSpinner from "./ui/LoadingSpinner";
 

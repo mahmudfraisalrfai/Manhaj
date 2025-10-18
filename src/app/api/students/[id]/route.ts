@@ -8,7 +8,6 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const session = await requireAuth("teacher");
     const { id } = await params; // أضف await هنا
 
     await prisma.user.delete({

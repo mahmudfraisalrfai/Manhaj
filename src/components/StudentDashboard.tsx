@@ -93,8 +93,8 @@ export default function StudentDashboard() {
               <h3 className="text-2xl font-bold">مرحباً بك في نظام المهام!</h3>
             </div>
             <p className="text-lg opacity-90 leading-relaxed">
-              يمكنك الآن عرض مهامك وتسليمها من قسم "مهامي"، ومتابعة تقدمك وأدائك
-              من قسم "تقدمي". نحن هنا لمساعدتك في رحلة التعلم!
+              يمكنك الآن عرض مهامك وتسليمها من قسم مهامي، ومتابعة تقدمك وأدائك
+              من تقدمي نحن هنا لمساعدتك في رحلة التعلم!
             </p>
             <div className="flex items-center gap-2 mt-4 text-blue-100">
               <TargetIcon className="w-4 h-4" />

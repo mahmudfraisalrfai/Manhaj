@@ -5,8 +5,6 @@ import { prisma } from "@/lib/prisma";
 
 export async function GET() {
   try {
-    const session = await requireAuth("teacher");
-
     const students = await prisma.user.findMany({
       where: { role: "student" },
       select: {
@@ -28,8 +26,6 @@ export async function GET() {
 
 export async function POST(request: Request) {
   try {
-    const session = await requireAuth("teacher");
-
     const { name, password } = await request.json();
 
     if (!name || !password) {

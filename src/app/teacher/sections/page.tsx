@@ -8,12 +8,6 @@ import {
   BookIcon,
   PlusIcon,
   TrashIcon,
-  ChevronDownIcon,
-  ChevronUpIcon,
-  ClockIcon,
-  UsersIcon,
-  CheckIcon,
-  EyeIcon,
   ChartIcon,
   TargetIcon,
 } from "@/components/ui/Icon";

@@ -3,14 +3,39 @@
 import { useSession } from "next-auth/react";
 import Link from "next/link";
 
+// تعريف الأنواع
+type ColorType = "blue" | "green" | "yellow" | "purple";
+
+interface ColorClasses {
+  blue: string;
+  green: string;
+  yellow: string;
+  purple: string;
+}
+
 export default function TeacherDashboard() {
   const { data: session } = useSession();
 
   const stats = [
-    { label: "عدد الطلاب", value: "5", color: "blue", icon: "👨‍🎓" },
-    { label: "عدد الأقسام", value: "3", color: "green", icon: "📚" },
-    { label: "المهام النشطة", value: "12", color: "yellow", icon: "📝" },
-    { label: "المهام المكتملة", value: "8", color: "purple", icon: "✅" },
+    { label: "عدد الطلاب", value: "5", color: "blue" as ColorType, icon: "👨‍🎓" },
+    {
+      label: "عدد الأقسام",
+      value: "3",
+      color: "green" as ColorType,
+      icon: "📚",
+    },
+    {
+      label: "المهام النشطة",
+      value: "12",
+      color: "yellow" as ColorType,
+      icon: "📝",
+    },
+    {
+      label: "المهام المكتملة",
+      value: "8",
+      color: "purple" as ColorType,
+      icon: "✅",
+    },
   ];
 
   const quickActions = [
@@ -19,26 +44,26 @@ export default function TeacherDashboard() {
       description: "إضافة وحذف وتعديل الطلاب",
       href: "/teacher/students",
       icon: "👨‍🎓",
-      color: "blue",
+      color: "blue" as ColorType,
     },
     {
       title: "إدارة الأقسام",
       description: "إنشاء وتعديل الأقسام",
       href: "/teacher/sections",
       icon: "📚",
-      color: "green",
+      color: "green" as ColorType,
     },
     {
       title: "إدارة المهام",
       description: "إضافة ومتابعة المهام",
       href: "/teacher/tasks",
       icon: "📝",
-      color: "yellow",
+      color: "yellow" as ColorType,
     },
   ];
 
-  const getColorClasses = (color: string) => {
-    const colors: any = {
+  const getColorClasses = (color: ColorType): string => {
+    const colors: ColorClasses = {
       blue: "from-blue-500 to-blue-600",
       green: "from-green-500 to-green-600",
       yellow: "from-amber-500 to-amber-600",
@@ -53,7 +78,7 @@ export default function TeacherDashboard() {
         {/* الرأس */}
         <div className="mb-8">
           <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">
-            مرحباً، الشيخ {session?.user?.name}
+            مرحباً، {session?.user?.name}
           </h1>
           <p className="text-gray-600">هذه نظرة عامة على نظام إدارة المهام</p>
         </div>
