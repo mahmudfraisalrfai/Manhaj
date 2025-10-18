@@ -15,7 +15,7 @@ async function main() {
   // إضافة الشيخ (المدير)
   const teacher = await prisma.user.create({
     data: {
-      name: "الشيخ",
+      name: "د.أبو النصر",
       password: "123456",
       role: "teacher",
     },

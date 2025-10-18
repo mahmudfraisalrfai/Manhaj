@@ -77,25 +77,6 @@ export default function TaskProgressPage() {
     }
   };
 
-  const assignToAllStudents = async () => {
-    try {
-      const response = await fetch(`/api/tasks/${taskId}/assign`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
-
-      if (response.ok) {
-        const result = await response.json();
-        alert(`تم تعيين المهمة لـ ${result.assignedCount} طالب`);
-        fetchTaskProgress();
-      }
-    } catch (error) {
-      alert("حدث خطأ أثناء تعيين المهمة");
-    }
-  };
-
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -137,13 +118,6 @@ export default function TaskProgressPage() {
             <h2 className="text-xl text-gray-700 mb-2">{task.title}</h2>
             <p className="text-gray-600">{task.section.name}</p>
           </div>
-
-          <button
-            onClick={assignToAllStudents}
-            className="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition-colors duration-200 font-medium"
-          >
-            تعيين لجميع الطلاب
-          </button>
         </div>
 
         {/* إحصائيات سريعة */}
@@ -278,12 +252,6 @@ export default function TaskProgressPage() {
                 <p className="text-gray-500 mb-4">
                   قم بتعيين المهمة للطلاب لمتابعة تقدمهم
                 </p>
-                <button
-                  onClick={assignToAllStudents}
-                  className="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition-colors duration-200"
-                >
-                  تعيين لجميع الطلاب
-                </button>
               </div>
             )}
           </div>
