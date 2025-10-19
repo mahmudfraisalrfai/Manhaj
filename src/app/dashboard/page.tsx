@@ -47,7 +47,7 @@ export default function Dashboard() {
   // إذا كان شيخاً، اعرض رسالة تحميل (سيتم التحويل تلقائياً)
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-      <div className="text-xl">جاري التوجيه إلى الأقسام...</div>
+      <div className="text-xl">...جاري التوجيه إلى الأقسام</div>
     </div>
   );
 }
