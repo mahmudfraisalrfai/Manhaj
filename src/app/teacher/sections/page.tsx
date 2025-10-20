@@ -1,3 +1,4 @@
+//app/teacher/sections/page.tsx
 "use client";
 import { useState, useEffect, useCallback } from "react";
 import { useSession } from "next-auth/react";
