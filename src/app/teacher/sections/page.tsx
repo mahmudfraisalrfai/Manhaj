@@ -6,7 +6,6 @@ import {
   FolderIcon,
   FolderOpenIcon,
   PlusIcon,
-  EditIcon,
   TrashIcon,
   ChevronRightIcon,
   ChevronDownIcon,

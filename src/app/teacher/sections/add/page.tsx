@@ -6,7 +6,6 @@ import Link from "next/link";
 import {
   ArrowLeftIcon,
   FolderIcon,
-  FolderOpenIcon,
   PlusIcon,
   UploadIcon,
   XIcon,
