@@ -33,9 +33,22 @@ import {
   FiBell,
   FiStar,
   FiAward,
+  FiChevronRight,
+  FiHash,
 } from "react-icons/fi";
-
+import {
+  PiPencilCircleDuotone,
+  PiFolder,
+  PiFolderOpen,
+  PiSparkle,
+} from "react-icons/pi";
 export {
+  PiSparkle as SparklesIcon,
+  FiChevronRight as ChevronRightIcon,
+  FiHash as HashtagIcon,
+  PiFolder as FolderIcon,
+  PiFolderOpen as FolderOpenIcon,
+  PiPencilCircleDuotone as PencilIcon,
   FiHome as HomeIcon,
   FiUsers as UsersIcon,
   FiBook as BookIcon,

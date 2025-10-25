@@ -1,34 +1,42 @@
-// app/api/sections/route.ts
 import { NextResponse } from "next/server";
 import { requireAuth } from "@/lib/auth-helper";
 import { prisma } from "@/lib/prisma";
 
-// في دالة GET في app/api/sections/route.ts
+// GET - جلب جميع الأقسام (مسطحة أو شجرة)
 export async function GET(request: Request) {
   try {
     const session = await requireAuth("teacher");
-
     const url = new URL(request.url);
-    const includeTasks = url.searchParams.get("includeTasks") === "true";
 
+    const flat = url.searchParams.get("flat") === "true";
+    const includeCounts = url.searchParams.get("includeCounts") === "true";
+
+    if (flat) {
+      // للقوائم المنسدلة
+      const sections = await prisma.section.findMany({
+        where: { teacherId: session.user.id },
+        select: {
+          id: true,
+          name: true,
+          description: true,
+          parentSectionId: true,
+          icon: true,
+        },
+        orderBy: { name: "asc" },
+      });
+      return NextResponse.json(sections);
+    }
+
+    // مع العدادات
     const sections = await prisma.section.findMany({
       where: { teacherId: session.user.id },
       include: {
         _count: {
-          select: { tasks: true },
+          select: {
+            tasks: includeCounts,
+            children: includeCounts,
+          },
         },
-        tasks: includeTasks
-          ? {
-              include: {
-                _count: {
-                  select: {
-                    studentTasks: true,
-                  },
-                },
-              },
-              orderBy: { createdAt: "desc" },
-            }
-          : false,
       },
       orderBy: { createdAt: "desc" },
     });
@@ -36,48 +44,76 @@ export async function GET(request: Request) {
     return NextResponse.json(sections);
   } catch (error: unknown) {
     return NextResponse.json(
-      { error: error || "حدث خطأ في جلب البيانات" },
-      { status: 401 }
+      { error: "حدث خطأ أثناء جلب الأقسام" },
+      { status: 500 }
     );
   }
 }
+
+// POST - إنشاء قسم جديد
 export async function POST(request: Request) {
   try {
     const session = await requireAuth("teacher");
-
-    const { name, description } = await request.json();
+    const { name, description, parentSectionId } = await request.json();
 
     if (!name) {
       return NextResponse.json({ error: "اسم القسم مطلوب" }, { status: 400 });
     }
 
-    const existingSection = await prisma.section.findFirst({
+    // التحقق من التكرار تحت نفس الأب
+    const existing = await prisma.section.findFirst({
       where: {
         name,
+        parentSectionId: parentSectionId || null,
         teacherId: session.user.id,
       },
     });
 
-    if (existingSection) {
+    if (existing) {
       return NextResponse.json(
-        { error: "اسم القسم موجود مسبقاً" },
+        { error: "اسم القسم موجود مسبقاً في هذا المستوى" },
         { status: 400 }
       );
     }
 
+    // إذا كان هناك قسم أب، التحقق من وجوده
+    if (parentSectionId) {
+      const parent = await prisma.section.findFirst({
+        where: {
+          id: parentSectionId,
+          teacherId: session.user.id,
+        },
+      });
+
+      if (!parent) {
+        return NextResponse.json(
+          { error: "القسم الأب غير موجود" },
+          { status: 404 }
+        );
+      }
+    }
+
+    // إنشاء القسم
     const section = await prisma.section.create({
       data: {
         name,
         description: description || "",
+        parentSectionId: parentSectionId || null,
         teacherId: session.user.id,
+      },
+      include: {
+        _count: {
+          select: { tasks: true, children: true },
+        },
       },
     });
 
     return NextResponse.json(section);
   } catch (error: unknown) {
+    console.error("Error creating section:", error);
     return NextResponse.json(
-      { error: error || "حدث خطأ في إضافة القسم" },
-      { status: 401 }
+      { error: "حدث خطأ أثناء إضافة القسم" },
+      { status: 500 }
     );
   }
 }

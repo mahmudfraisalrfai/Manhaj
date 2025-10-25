@@ -21,13 +21,19 @@ model User {
 }
 
 model Section {
-    id          String   @id @default(cuid())
-    name        String
-    description String?
-    teacherId   String
-    teacher     User     @relation("TeacherSections", fields: [teacherId], references: [id], onDelete: Cascade)
-    tasks       Task[]   @relation("SectionTasks")
-    createdAt   DateTime @default(now())
+    id              String    @id @default(cuid())
+    name            String
+    description     String?
+    teacherId       String
+    teacher         User      @relation("TeacherSections", fields: [teacherId], references: [id], onDelete: Cascade)
+    tasks           Task[]    @relation("SectionTasks")
+    parentSectionId String?
+    parent          Section?  @relation("SectionChildren", fields: [parentSectionId], references: [id], onDelete: Cascade)
+    children        Section[] @relation("SectionChildren")
+    icon            String? // url/path to uploaded icon
+    createdAt       DateTime  @default(now())
+
+    @@index([parentSectionId])
 }
 
 model Task {
