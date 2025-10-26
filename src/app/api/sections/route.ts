@@ -54,7 +54,7 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   try {
     const session = await requireAuth("teacher");
-    const { name, description, parentSectionId } = await request.json();
+    const { name, description, parentSectionId, icon } = await request.json();
 
     if (!name) {
       return NextResponse.json({ error: "اسم القسم مطلوب" }, { status: 400 });
@@ -100,6 +100,7 @@ export async function POST(request: Request) {
         description: description || "",
         parentSectionId: parentSectionId || null,
         teacherId: session.user.id,
+        icon: icon || null,
       },
       include: {
         _count: {

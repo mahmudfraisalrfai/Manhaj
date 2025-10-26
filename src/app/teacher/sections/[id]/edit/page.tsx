@@ -6,12 +6,12 @@ import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
 import {
   ArrowLeftIcon,
-  UploadIcon,
   TrashIcon,
   CheckIcon,
   XIcon,
   BookIcon,
 } from "@/components/ui/Icon";
+import { UploadButton } from "@/components/ui/upload-button";
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
 
 interface Section {
@@ -104,32 +104,20 @@ export default function EditSectionPage() {
     }
   };
 
-  const handleIconUpload = async (file: File) => {
-    if (!file || !section) return;
+  // دالة جديدة لمعالجة رفع الأيقونة باستخدام UploadThing
+  const handleIconUpload = async (fileUrl: string) => {
+    if (!section) return;
+
     setUploadingIcon(true);
     try {
-      const fd = new FormData();
-      fd.append("icon", file);
-      fd.append("sectionId", section.id);
-
-      const uploadRes = await fetch("/api/upload/", {
-        method: "POST",
-        body: fd,
-        credentials: "include",
-      });
-
-      if (!uploadRes.ok) {
-        const p = await uploadRes.json().catch(() => ({}));
-        throw new Error(p.error || "فشل رفع الأيقونة");
-      }
-
-      const { fileUrl } = await uploadRes.json();
-
       const updateRes = await fetch(`/api/sections/${section.id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body: JSON.stringify({ id: section.id, icon: fileUrl }),
+        body: JSON.stringify({
+          id: section.id,
+          icon: fileUrl,
+        }),
       });
 
       if (!updateRes.ok) {
@@ -137,39 +125,39 @@ export default function EditSectionPage() {
         throw new Error(p.error || "فشل تحديث القسم برابط الأيقونة");
       }
 
-      await fetchSectionData();
       alert("تم رفع الأيقونة بنجاح");
     } catch (err) {
-      console.error("Icon upload error:", err);
-      alert((err as Error).message || "حدث خطأ أثناء رفع الأيقونة");
+      console.error("Icon update error:", err);
+      alert((err as Error).message || "حدث خطأ أثناء تحديث الأيقونة");
     } finally {
       setUploadingIcon(false);
     }
   };
 
+  const handleUploadError = (error: Error) => {
+    alert(`خطأ في رفع الأيقونة: ${error.message}`);
+  };
+
   const handleIconDelete = async () => {
     if (!section) return;
     if (!confirm("هل تريد حذف أيقونة هذا القسم؟")) return;
+
     setDeletingIcon(true);
     try {
-      const res = await fetch("/api/upload", {
-        method: "DELETE",
+      const res = await fetch(`/api/sections/${section.id}`, {
+        method: "PUT",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body: JSON.stringify({ sectionId: section.id }),
+        body: JSON.stringify({
+          id: section.id,
+          icon: null,
+        }),
       });
 
       if (!res.ok) {
         const p = await res.json().catch(() => ({}));
         throw new Error(p.error || "فشل حذف الأيقونة");
       }
-
-      await fetch(`/api/sections/${section.id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({ id: section.id, icon: null }),
-      });
 
       await fetchSectionData();
       alert("تم حذف الأيقونة بنجاح");
@@ -277,40 +265,12 @@ export default function EditSectionPage() {
                 {/* أزرار التحكم بالأيقونة */}
                 <div className="flex-1 space-y-3">
                   <div className="flex flex-col sm:flex-row gap-3">
-                    {/* زر رفع الأيقونة */}
+                    {/* زر رفع الأيقونة باستخدام UploadThing */}
                     <div className="flex-1">
-                      <input
-                        id="icon-upload"
-                        type="file"
-                        accept="image/*"
-                        className="hidden"
-                        onChange={(e) => {
-                          const file = e.target.files?.[0];
-                          if (!file) return;
-
-                          if (!file.type.startsWith("image/")) {
-                            alert("الرجاء اختيار ملف صورة فقط");
-                            return;
-                          }
-
-                          if (file.size > 2 * 1024 * 1024) {
-                            alert("حجم الملف يجب أن يكون أقل من 2MB");
-                            return;
-                          }
-
-                          handleIconUpload(file);
-                        }}
-                        disabled={uploadingIcon}
+                      <UploadButton
+                        onUploadComplete={handleIconUpload}
+                        onUploadError={handleUploadError}
                       />
-                      <label
-                        htmlFor="icon-upload"
-                        className={`w-full bg-gradient-to-r from-blue-500 to-cyan-500 text-white px-4 py-3 rounded-2xl font-medium hover:shadow-lg transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer ${
-                          uploadingIcon ? "opacity-50 cursor-not-allowed" : ""
-                        }`}
-                      >
-                        <UploadIcon className="w-4 h-4" />
-                        {uploadingIcon ? "جارٍ الرفع..." : "رفع أيقونة جديدة"}
-                      </label>
                     </div>
 
                     {/* زر حذف الأيقونة */}
@@ -327,7 +287,7 @@ export default function EditSectionPage() {
                     )}
                   </div>
                   <p className="text-sm text-gray-500 text-center sm:text-right">
-                    المسموح: PNG, JPG, GIF - الحد الأقصى 2MB
+                    المسموح: PNG, JPG, GIF, WebP, SVG - الحد الأقصى 4MB
                   </p>
                 </div>
               </div>

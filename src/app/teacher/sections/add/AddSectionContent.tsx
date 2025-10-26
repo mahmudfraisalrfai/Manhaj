@@ -10,6 +10,7 @@ import {
   UploadIcon,
   XIcon,
 } from "@/components/ui/Icon";
+import { UploadButton } from "@/components/ui/upload-button";
 
 interface ParentSection {
   id: string;
@@ -21,7 +22,6 @@ export default function AddSectionPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const parentId = searchParams.get("parent");
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [formData, setFormData] = useState({
     name: "",
@@ -32,9 +32,8 @@ export default function AddSectionPage() {
   const [parentSections, setParentSections] = useState<ParentSection[]>([]);
   const [fetchingParents, setFetchingParents] = useState(false);
 
-  // حالات جديدة لإدارة الأيقونة
-  const [selectedIcon, setSelectedIcon] = useState<File | null>(null);
-  const [iconPreview, setIconPreview] = useState<string | null>(null);
+  // حالات إدارة الأيقونة
+  const [iconUrl, setIconUrl] = useState<string | null>(null);
   const [uploadingIcon, setUploadingIcon] = useState(false);
 
   useEffect(() => {
@@ -54,77 +53,28 @@ export default function AddSectionPage() {
     }
   };
 
-  // معالجة اختيار الأيقونة
-  const handleIconSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      // التحقق من نوع الملف
-      const allowedTypes = [
-        "image/jpeg",
-        "image/png",
-        "image/gif",
-        "image/webp",
-        "image/svg+xml",
-      ];
-      if (!allowedTypes.includes(file.type)) {
-        alert("نوع الملف غير مسموح. المسموح: JPEG, PNG, GIF, WebP, SVG");
-        return;
-      }
-
-      // التحقق من حجم الملف (5MB كحد أقصى)
-      if (file.size > 5 * 1024 * 1024) {
-        alert("حجم الملف كبير جداً. الحد الأقصى 5MB");
-        return;
-      }
-
-      setSelectedIcon(file);
-
-      // إنشاء معاينة للصورة
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        setIconPreview(e.target?.result as string);
-      };
-      reader.readAsDataURL(file);
-    }
+  // معالجة رفع الأيقونة بنجاح
+  const handleIconUploadComplete = (url: string) => {
+    console.log("تم رفع الأيقونة بنجاح:", url);
+    setIconUrl(url);
+    setUploadingIcon(false);
   };
 
-  // إزالة الأيقونة المختارة
-  const handleRemoveIcon = () => {
-    setSelectedIcon(null);
-    setIconPreview(null);
-    if (fileInputRef.current) {
-      fileInputRef.current.value = "";
-    }
+  // معالجة أخطاء رفع الأيقونة
+  const handleIconUploadError = (error: Error) => {
+    console.error("خطأ في رفع الأيقونة:", error);
+    setUploadingIcon(false);
+    alert(`خطأ في رفع الأيقونة: ${error.message}`);
   };
 
-  // رفع الأيقونة بشكل منفصل
-  const uploadIcon = async (sectionId: string): Promise<string | null> => {
-    if (!selectedIcon) return null;
-
+  // بدء عملية الرفع
+  const handleUploadStart = () => {
     setUploadingIcon(true);
-    try {
-      const formData = new FormData();
-      formData.append("icon", selectedIcon);
-      formData.append("sectionId", sectionId);
+  };
 
-      const response = await fetch("/api/upload", {
-        method: "POST",
-        body: formData,
-      });
-
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || "فشل في رفع الأيقونة");
-      }
-
-      const result = await response.json();
-      return result.iconUrl;
-    } catch (error) {
-      console.error("Error uploading icon:", error);
-      throw error;
-    } finally {
-      setUploadingIcon(false);
-    }
+  // حذف الأيقونة
+  const handleRemoveIcon = () => {
+    setIconUrl(null);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -138,11 +88,12 @@ export default function AddSectionPage() {
     setLoading(true);
 
     try {
-      // إرسال البيانات الأساسية للقسم أولاً
+      // إرسال البيانات الأساسية للقسم مع رابط الأيقونة إذا كان موجوداً
       const requestBody = {
         name: formData.name.trim(),
         description: formData.description.trim(),
         parentSectionId: formData.parentSectionId || null,
+        icon: iconUrl, // إضافة رابط الأيقونة المرفوعة
       };
 
       const response = await fetch("/api/sections", {
@@ -155,19 +106,6 @@ export default function AddSectionPage() {
 
       if (response.ok) {
         const newSection = await response.json();
-
-        // إذا كان هناك أيقونة مختارة، قم برفعها
-        if (selectedIcon) {
-          try {
-            await uploadIcon(newSection.id);
-          } catch (iconError) {
-            console.error(
-              "فشل في رفع الأيقونة، لكن القسم تم إنشاؤه:",
-              iconError
-            );
-            // نستمر حتى لو فشل رفع الأيقونة
-          }
-        }
 
         const successMessage = requestBody.parentSectionId
           ? `تم إضافة الفرع "${formData.name}" بنجاح تحت القسم المحدد`
@@ -204,12 +142,6 @@ export default function AddSectionPage() {
     if (!parentId) return null;
     const parent = parentSections.find((sec) => sec.id === parentId);
     return parent?.name || "قسم مجهول";
-  };
-
-  const getAvailableParents = () => {
-    return parentSections.filter(
-      (section) => section.id !== formData.parentSectionId
-    );
   };
 
   return (
@@ -252,11 +184,11 @@ export default function AddSectionPage() {
 
               <div className="space-y-4">
                 {/* معاينة الأيقونة */}
-                {iconPreview && (
+                {iconUrl && (
                   <div className="flex items-center gap-4 p-4 bg-white/60 rounded-xl border border-yellow-200">
                     <div className="relative">
                       <img
-                        src={iconPreview}
+                        src={iconUrl}
                         alt="معاينة الأيقونة"
                         className="w-16 h-16 object-cover rounded-lg"
                       />
@@ -270,48 +202,44 @@ export default function AddSectionPage() {
                     </div>
                     <div className="flex-1">
                       <p className="text-sm font-medium text-gray-700">
-                        {selectedIcon?.name}
+                        الأيقونة المرفوعة
                       </p>
-                      <p className="text-xs text-gray-500">
-                        {(selectedIcon?.size || 0) / 1024} كيلوبايت
+                      <p className="text-xs text-green-600 font-medium">
+                        ✓ جاهزة للإستخدام
                       </p>
                     </div>
                   </div>
                 )}
 
-                {/* زر اختيار الملف */}
-                <div className="flex items-center gap-4">
-                  <input
-                    type="file"
-                    ref={fileInputRef}
-                    onChange={handleIconSelect}
-                    accept="image/jpeg,image/png,image/gif,image/webp,image/svg+xml"
-                    className="hidden"
-                    id="icon-upload"
-                  />
-                  <label
-                    htmlFor="icon-upload"
-                    className="flex-1 cursor-pointer bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-4 rounded-xl font-medium hover:shadow-lg transition-all duration-200 text-center"
-                  >
-                    <span className="flex items-center justify-center gap-2">
-                      <UploadIcon className="w-4 h-4" />
-                      {iconPreview ? "تغيير الأيقونة" : "اختر أيقونة"}
-                    </span>
-                  </label>
+                {/* زر رفع الأيقونة باستخدام UploadButton */}
+                <div className="flex flex-col gap-4">
+                  <div className="flex items-center gap-4">
+                    <UploadButton
+                      onUploadComplete={handleIconUploadComplete}
+                      onUploadError={handleIconUploadError}
+                    />
 
-                  {iconPreview && (
-                    <button
-                      type="button"
-                      onClick={handleRemoveIcon}
-                      className="px-4 py-3 bg-gray-500 text-white rounded-xl font-medium hover:bg-gray-600 transition-colors"
-                    >
-                      <XIcon className="w-4 h-4" />
-                    </button>
+                    {iconUrl && (
+                      <button
+                        type="button"
+                        onClick={handleRemoveIcon}
+                        className="px-4 py-2 bg-gray-500 text-white rounded-lg font-medium hover:bg-gray-600 transition-colors flex items-center gap-2"
+                      >
+                        <XIcon className="w-4 h-4" />
+                        إزالة
+                      </button>
+                    )}
+                  </div>
+
+                  {uploadingIcon && (
+                    <p className="text-sm text-blue-600 font-medium">
+                      ⏳ جاري رفع الأيقونة...
+                    </p>
                   )}
                 </div>
 
                 <p className="text-sm text-gray-500">
-                  المسموح: JPEG, PNG, GIF, WebP, SVG - الحد الأقصى 5MB
+                  المسموح: JPEG, PNG, GIF, WebP, SVG - الحد الأقصى 4MB
                 </p>
               </div>
             </div>
@@ -356,12 +284,10 @@ export default function AddSectionPage() {
                 disabled={loading || uploadingIcon}
                 className="flex-1 bg-gradient-to-r from-green-500 to-blue-600 text-white py-4 px-6 rounded-2xl font-semibold hover:shadow-xl focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
               >
-                {loading || uploadingIcon ? (
+                {loading ? (
                   <span className="flex items-center justify-center gap-2">
                     <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                    {uploadingIcon
-                      ? "جاري رفع الأيقونة..."
-                      : formData.parentSectionId || parentId
+                    {formData.parentSectionId || parentId
                       ? "جاري إضافة الفرع..."
                       : "جاري إضافة القسم..."}
                   </span>
