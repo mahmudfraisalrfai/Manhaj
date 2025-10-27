@@ -1,4 +1,3 @@
-// app/student/tasks/page.tsx
 "use client";
 import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
@@ -18,6 +17,7 @@ interface StudentTask {
   status: string;
   submittedAt: string | null;
   createdAt: string;
+  note?: string | null; // ← ملاحظة المدرّس (تمت إضافتها)
 }
 
 export default function StudentTasksPage() {
@@ -27,12 +27,19 @@ export default function StudentTasksPage() {
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<"all" | "pending" | "completed">("all");
 
+  // drafts for student's optional submission comments
+  const [commentDrafts, setCommentDrafts] = useState<Record<string, string>>(
+    {}
+  );
+  const [submittingId, setSubmittingId] = useState<string | null>(null);
+
   useEffect(() => {
     if (session?.user?.role !== "student") {
       router.push("/dashboard");
       return;
     }
     fetchStudentTasks();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [session, router]);
 
   const fetchStudentTasks = async () => {
@@ -42,7 +49,17 @@ export default function StudentTasksPage() {
         throw new Error("فشل في جلب المهام");
       }
       const data = await response.json();
+      // توقع أن الـ API يرجع مصفوفة بها الحقل `note` لكل سجل studentTask
       setTasks(data);
+
+      // init comment drafts from existing (if you store studentNote on backend)
+      const drafts: Record<string, string> = {};
+      (data || []).forEach((t: StudentTask) => {
+        // لو الخادم يعيد حقل studentNote يمكنك تهيئته هنا،
+        // الآن نتركه فارغ افتراضياً
+        drafts[t.id] = "";
+      });
+      setCommentDrafts(drafts);
     } catch (error) {
       console.error("Error fetching student tasks:", error);
       alert("حدث خطأ في جلب المهام");
@@ -53,23 +70,35 @@ export default function StudentTasksPage() {
 
   const submitTask = async (taskId: string) => {
     try {
+      setSubmittingId(taskId);
+      const body: any = { status: "completed" };
+      // إن كتب الطالب تعليقًا نرسله بهذا الحقل (backend يحتاج دعماً لحفظ studentNote)
+      if ((commentDrafts[taskId] || "").trim().length > 0) {
+        body.studentNote = commentDrafts[taskId].trim();
+      }
+
       const response = await fetch(`/api/student/tasks/${taskId}`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ status: "completed" }),
+        body: JSON.stringify(body),
       });
 
       if (response.ok) {
         alert("تم تسليم المهمة بنجاح");
-        fetchStudentTasks();
+        await fetchStudentTasks();
       } else {
-        throw new Error("فشل في تسليم المهمة");
+        // حاول قراءة رسالة الخطأ من الـ API إن وُجدت
+        const err = await response.json().catch(() => ({}));
+        console.error("submitTask failed:", err);
+        throw new Error(err?.error || "فشل في تسليم المهمة");
       }
     } catch (error) {
       console.error("Error submitting task:", error);
       alert("حدث خطأ في تسليم المهمة");
+    } finally {
+      setSubmittingId(null);
     }
   };
 
@@ -195,7 +224,7 @@ export default function StudentTasksPage() {
                       {studentTask.task.description || "لا يوجد وصف"}
                     </p>
 
-                    <div className="flex flex-wrap gap-4 text-sm text-gray-500">
+                    <div className="flex flex-wrap gap-4 text-sm text-gray-500 mb-3">
                       <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
                         {studentTask.task.section.name}
                       </span>
@@ -223,15 +252,49 @@ export default function StudentTasksPage() {
                         </span>
                       )}
                     </div>
+
+                    {/* ← عرض ملاحظة المدرّس (إن وجدت) */}
+                    {studentTask.note ? (
+                      <div className="bg-yellow-50 border border-yellow-100 text-sm text-gray-800 p-3 rounded mb-3">
+                        <div className="font-medium text-sm mb-1">
+                          ملاحظة المدرّس:
+                        </div>
+                        <div className="text-sm">{studentTask.note}</div>
+                      </div>
+                    ) : null}
+
+                    {/* ← حقل تعليق الطالب (اختياري) */}
+                    {studentTask.status === "pending" && (
+                      <div className="mb-3">
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          تعليقك (اختياري عند التسليم)
+                        </label>
+                        <textarea
+                          rows={2}
+                          value={commentDrafts[studentTask.id] ?? ""}
+                          onChange={(e) =>
+                            setCommentDrafts((p) => ({
+                              ...p,
+                              [studentTask.id]: e.target.value,
+                            }))
+                          }
+                          className="w-full p-2 border rounded-md text-sm"
+                          placeholder="اكتب ملاحظة قصيرة للشيخ عند التسليم..."
+                        />
+                      </div>
+                    )}
                   </div>
 
                   <div className="flex gap-2">
                     {studentTask.status === "pending" ? (
                       <button
                         onClick={() => submitTask(studentTask.id)}
+                        disabled={submittingId === studentTask.id}
                         className="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition-colors duration-200 font-medium"
                       >
-                        تسليم المهمة
+                        {submittingId === studentTask.id
+                          ? "جاري التسليم..."
+                          : "تسليم المهمة"}
                       </button>
                     ) : (
                       <button

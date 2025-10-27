@@ -41,8 +41,12 @@ import {
   PiFolder,
   PiFolderOpen,
   PiSparkle,
+  PiSortAscending,
+  PiWhatsappLogo,
 } from "react-icons/pi";
 export {
+  PiWhatsappLogo as WhatsAppIcon,
+  PiSortAscending as SortIcon,
   PiSparkle as SparklesIcon,
   FiChevronRight as ChevronRightIcon,
   FiHash as HashtagIcon,

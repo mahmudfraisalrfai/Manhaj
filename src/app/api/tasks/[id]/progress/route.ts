@@ -9,12 +9,12 @@ export async function GET(
 ) {
   try {
     const session = await requireAuth("teacher");
-    const { id } = await params; // أضف await هنا
+    const { id } = await params;
 
-    // جلب تفاصيل المهمة
+    // جلب تفاصيل المهمة مع اسم القسم
     const task = await prisma.task.findFirst({
       where: {
-        id: id, // استخدم id بدلاً من taskId
+        id: id,
         teacherId: session.user.id,
       },
       include: {
@@ -33,9 +33,9 @@ export async function GET(
       );
     }
 
-    // جلب تقدم الطلاب في هذه المهمة
+    // جلب تقدم الطلاب في هذه المهمة مع حقل الملاحظة
     const studentProgress = await prisma.studentTask.findMany({
-      where: { taskId: id }, // استخدم id بدلاً من taskId
+      where: { taskId: id },
       include: {
         student: {
           select: {
@@ -51,13 +51,15 @@ export async function GET(
       },
     });
 
-    // تنسيق البيانات
+    // تنسيق البيانات ليطابق الواجهة (id هنا هو id لسجل StudentTask)
     const students = studentProgress.map((sp) => ({
       id: sp.id,
       name: sp.student.name,
       status: sp.status,
       submittedAt: sp.submittedAt,
       createdAt: sp.createdAt,
+      note: sp.note ?? null, // ← إضافة حقل الملاحظة
+      studentNote: sp.studentNote ?? null,
     }));
 
     return NextResponse.json({
@@ -72,9 +74,10 @@ export async function GET(
       students,
     });
   } catch (error: unknown) {
+    console.error("GET /api/tasks/:id/progress error:", error);
     return NextResponse.json(
-      { error: error || "حدث خطأ في جلب بيانات التقدم" },
-      { status: 401 }
+      { error: "حدث خطأ في جلب بيانات التقدم" },
+      { status: 500 }
     );
   }
 }

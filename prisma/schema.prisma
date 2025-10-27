@@ -18,6 +18,7 @@ model User {
     sections     Section[]     @relation("TeacherSections")
     tasks        Task[]        @relation("TeacherTasks")
     studentTasks StudentTask[]
+    phone        String?
 }
 
 model Section {
@@ -61,6 +62,8 @@ model StudentTask {
     task        Task      @relation(fields: [taskId], references: [id], onDelete: Cascade)
     status      String    @default("pending")
     submittedAt DateTime?
+    note        String? // ملاحظة المدرّس (موجود مسبقًا)
+    studentNote String? // ← تعليق / ملاحظة الطالب عند التسليم (الجديد)
     createdAt   DateTime  @default(now())
 
     @@unique([studentId, taskId])
