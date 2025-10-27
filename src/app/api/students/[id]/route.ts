@@ -8,16 +8,44 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = await params; // أضف await هنا
+    await requireAuth("teacher");
+    const { id } = await params;
 
-    await prisma.user.delete({
-      where: { id: id }, // استخدم id بدلاً من params.id
+    // التحقق من وجود الطالب أولاً
+    const student = await prisma.user.findUnique({
+      where: {
+        id,
+        role: "student",
+      },
     });
 
-    return NextResponse.json({ message: "تم حذف الطالب بنجاح" });
+    if (!student) {
+      return NextResponse.json({ error: "الطالب غير موجود" }, { status: 404 });
+    }
+
+    // حذف جميع مهام الطالب أولاً (لتفادي أخطاء Foreign Key)
+    await prisma.studentTask.deleteMany({
+      where: { studentId: id },
+    });
+
+    // ثم حذف الطالب
+    await prisma.user.delete({
+      where: { id },
+    });
+
+    return NextResponse.json({
+      success: true,
+      message: "تم حذف الطالب وجميع مهامه بنجاح",
+    });
   } catch (error: unknown) {
+    console.error("DELETE /api/students/[id] error:", error);
+
+    if (error instanceof Error && error.message.includes("Unauthorized")) {
+      return NextResponse.json({ error: "غير مصرح" }, { status: 401 });
+    }
+
     return NextResponse.json(
-      { error: error || "حدث خطأ في حذف الطالب" },
+      { error: "حدث خطأ في حذف الطالب" },
       { status: 500 }
     );
   }
