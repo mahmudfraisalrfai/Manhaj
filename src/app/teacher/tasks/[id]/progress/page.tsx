@@ -293,7 +293,7 @@ export default function EnhancedTaskProgressPage() {
 
     return result;
   }, [students, debouncedSearch, statusFilter, sortConfig]);
-
+  console.log("Filtered and Sorted Students:", filteredAndSorted);
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center">

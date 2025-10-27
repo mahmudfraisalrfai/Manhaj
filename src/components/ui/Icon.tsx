@@ -43,8 +43,14 @@ import {
   PiSparkle,
   PiSortAscending,
   PiWhatsappLogo,
+  PiUserPlus,
+  PiEyeClosed,
+  PiCopy,
 } from "react-icons/pi";
 export {
+  PiUserPlus as UserPlusIcon,
+  PiEyeClosed as EyeOffIcon,
+  PiCopy as CopyIcon,
   PiWhatsappLogo as WhatsAppIcon,
   PiSortAscending as SortIcon,
   PiSparkle as SparklesIcon,

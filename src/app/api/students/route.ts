@@ -12,6 +12,7 @@ export async function GET() {
         name: true,
         password: true,
         createdAt: true,
+        phone: true,
       },
       orderBy: { createdAt: "desc" },
     });
@@ -27,7 +28,7 @@ export async function GET() {
 
 export async function POST(request: Request) {
   try {
-    const { name, password } = await request.json();
+    const { name, password, phone } = await request.json();
 
     if (!name || !password) {
       return NextResponse.json(
@@ -52,6 +53,7 @@ export async function POST(request: Request) {
         name,
         password,
         role: "student",
+        phone,
       },
     });
 

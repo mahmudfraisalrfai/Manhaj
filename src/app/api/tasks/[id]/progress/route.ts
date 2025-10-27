@@ -41,6 +41,7 @@ export async function GET(
           select: {
             id: true,
             name: true,
+            phone: true,
           },
         },
       },
@@ -60,6 +61,7 @@ export async function GET(
       createdAt: sp.createdAt,
       note: sp.note ?? null, // ← إضافة حقل الملاحظة
       studentNote: sp.studentNote ?? null,
+      phone: sp.student.phone,
     }));
 
     return NextResponse.json({
