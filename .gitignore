@@ -9,7 +9,9 @@
 !.yarn/plugins
 !.yarn/releases
 !.yarn/versions
-
+/.specify
+/.agent
+prisma\seed.ts
 # testing
 /coverage
 

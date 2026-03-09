@@ -16,6 +16,7 @@ import {
   XIcon,
 } from "@/components/ui/Icon";
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
+import SectionsGraph from "./components/SectionsGraph";
 
 interface Section {
   id: string;
@@ -120,11 +121,17 @@ export default function SectionsTreePage() {
     }
   };
 
-  const toggleExpand = (id: string) => {
-    setExpanded((prev) =>
-      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
-    );
-  };
+  const toggleExpand = useCallback((id: string, forceExpand?: boolean) => {
+    setExpanded((prev) => {
+      const isCurrentlyExpanded = prev.includes(id);
+      if (forceExpand !== undefined) {
+        if (forceExpand && !isCurrentlyExpanded) return [...prev, id];
+        if (!forceExpand && isCurrentlyExpanded) return prev.filter((x) => x !== id);
+        return prev;
+      }
+      return isCurrentlyExpanded ? prev.filter((x) => x !== id) : [...prev, id];
+    });
+  }, []);
 
   const expandAll = () => {
     const allIds: string[] = [];
@@ -217,175 +224,7 @@ export default function SectionsTreePage() {
     return sortSections(filtered);
   }, [sections, debouncedSearch, sortBy]);
 
-  // ----- مكوّن SectionTree منفصل ومحسّن بالـ memo -----
-  const SectionTree = React.memo(function _SectionTree({
-    section,
-    level = 0,
-  }: {
-    section: Section;
-    level?: number;
-  }) {
-    const isExpanded = expanded.includes(section.id);
-    const hasChildren = section.children && section.children.length > 0;
-    const isRoot = level === 0;
 
-    return (
-      <div className="relative">
-        {level > 0 && (
-          <div
-            className="absolute left-4 sm:left-6 top-0 w-0.5 bg-gradient-to-b from-blue-200 to-transparent hidden sm:block"
-            style={{ height: "100%" }}
-          />
-        )}
-
-        <div className="flex items-start group">
-          {Array.from({ length: level }).map((_, idx) => (
-            <div key={idx} className="w-4 sm:w-8 flex-shrink-0 relative">
-              {idx === level - 1 && (
-                <div className="absolute left-2 sm:left-4 top-0 w-0.5 h-6 bg-blue-200 hidden sm:block" />
-              )}
-            </div>
-          ))}
-
-          <div className="flex-1 min-w-0">
-            <div
-              className={`flex flex-col sm:flex-row sm:items-center justify-between p-3 sm:p-4 rounded-xl transition-all duration-300 ${
-                isRoot
-                  ? "bg-gradient-to-r from-blue-50 to-blue-25 border-2 border-blue-100"
-                  : "bg-white border-2 border-gray-100 hover:border-blue-200"
-              } group-hover:shadow-md mb-2`}
-            >
-              <div className="flex items-center gap-3 flex-1 min-w-0 mb-2 sm:mb-0">
-                <button
-                  onClick={() => toggleExpand(section.id)}
-                  aria-expanded={isExpanded}
-                  aria-controls={`sec-${section.id}`}
-                  className={`p-1 sm:p-2 rounded-lg transition-all duration-200 flex-shrink-0 ${
-                    !hasChildren ? "invisible" : "hover:bg-white"
-                  } ${isExpanded ? "bg-white shadow-sm" : "bg-gray-50"}`}
-                >
-                  {hasChildren ? (
-                    isExpanded ? (
-                      <ChevronDownIcon className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600" />
-                    ) : (
-                      <ChevronRightIcon className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600" />
-                    )
-                  ) : (
-                    <div className="w-4 h-4 sm:w-5 sm:h-5" />
-                  )}
-                </button>
-
-                <div className="flex-shrink-0 relative">
-                  {section.icon ? (
-                    <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-full overflow-hidden border-2 border-white shadow-lg relative">
-                      <img
-                        src={section.icon}
-                        alt={section.name}
-                        className="w-full h-full object-cover" // object-cover لجعل الصورة تملأ الإطار
-                      />
-                    </div>
-                  ) : (
-                    <div
-                      className={`w-12 h-12 sm:w-14 sm:h-14 rounded-full shadow-sm flex items-center justify-center ${
-                        isRoot
-                          ? "bg-gradient-to-br from-blue-500 to-blue-600"
-                          : hasChildren
-                          ? "bg-gradient-to-br from-yellow-500 to-yellow-600"
-                          : "bg-gradient-to-br from-green-500 to-green-600"
-                      }`}
-                    >
-                      {hasChildren ? (
-                        isExpanded ? (
-                          <FolderOpenIcon className="w-6 h-6 sm:w-7 sm:h-7 text-white" />
-                        ) : (
-                          <FolderIcon className="w-6 h-6 sm:w-7 sm:h-7 text-white" />
-                        )
-                      ) : (
-                        <BookIcon className="w-6 h-6 sm:w-7 sm:h-7 text-white" />
-                      )}
-                    </div>
-                  )}
-                </div>
-
-                <div className="flex-1 min-w-0">
-                  <div className="flex flex-col sm:flex-row sm:items-center sm:gap-3 mb-1 sm:mb-2">
-                    <Link
-                      href={`/teacher/sections/${section.id}`}
-                      className={`font-bold hover:text-blue-600 transition-colors text-sm sm:text-base ${
-                        isRoot ? "text-gray-900" : "text-gray-800"
-                      }`}
-                    >
-                      {section.name}
-                    </Link>
-                    {isRoot && (
-                      <span className="px-2 py-1 bg-blue-100 text-blue-700 text-xs rounded-full font-medium self-start sm:self-center mt-1 sm:mt-0">
-                        جذر
-                      </span>
-                    )}
-                  </div>
-
-                  {section.description && (
-                    <p className="text-gray-600 text-xs sm:text-sm mb-2 line-clamp-1 sm:line-clamp-2">
-                      {section.description}
-                    </p>
-                  )}
-
-                  <div className="flex flex-wrap gap-2">
-                    {section._count.children > 0 && (
-                      <span className="flex items-center gap-1 text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-full">
-                        <FolderIcon className="w-3 h-3 text-yellow-500" />
-                        {section._count.children} فرع
-                      </span>
-                    )}
-                    {/* عرض عدد المهام داخل هذا الفرع فقط - لكن الإحصائيات العليا ستأخذ المجاميع */}
-                    {section._count.tasks > 0 && (
-                      <span className="flex items-center gap-1 text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-full">
-                        <TargetIcon className="w-3 h-3 text-green-500" />
-                        {section._count.tasks} مهمة
-                      </span>
-                    )}
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-1 sm:gap-2 self-end sm:self-center">
-                <Link
-                  href={`/teacher/sections/add?parent=${section.id}`}
-                  className="p-2 bg-green-50 text-green-700 rounded-lg hover:bg-green-100 transition-colors"
-                  title="إضافة فرع جديد"
-                >
-                  <PlusIcon className="w-4 h-4" />
-                </Link>
-
-                <button
-                  onClick={() => requestDeleteSection(section.id)}
-                  className="p-2 bg-red-50 text-red-700 rounded-lg hover:bg-red-100 transition-colors"
-                  title="حذف القسم"
-                >
-                  <TrashIcon className="w-4 h-4" />
-                </button>
-              </div>
-            </div>
-
-            {isExpanded && hasChildren && (
-              <div
-                id={`sec-${section.id}`}
-                className="ml-2 sm:ml-12 border-l-2 border-dashed border-blue-200"
-              >
-                {section.children!.map((child) => (
-                  <SectionTree
-                    key={child.id}
-                    section={child}
-                    level={level + 1}
-                  />
-                ))}
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-    );
-  });
 
   if (loading) {
     return (
@@ -547,11 +386,12 @@ export default function SectionsTreePage() {
 
         <div className="bg-white rounded-2xl sm:rounded-3xl shadow-sm border border-blue-100 p-3 sm:p-6">
           {filteredAndSortedSections.length > 0 ? (
-            <div className="space-y-2 sm:space-y-3">
-              {filteredAndSortedSections.map((section) => (
-                <SectionTree key={section.id} section={section} />
-              ))}
-            </div>
+            <SectionsGraph
+              sections={filteredAndSortedSections}
+              expandedMap={expanded}
+              onExpandToggle={toggleExpand}
+              onDeleteRequest={requestDeleteSection}
+            />
           ) : debouncedSearch ? (
             <div className="text-center py-8 sm:py-16">
               <SearchIcon className="w-12 h-12 sm:w-16 sm:h-16 text-gray-300 mx-auto mb-3 sm:mb-4" />
