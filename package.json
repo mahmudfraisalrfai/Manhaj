@@ -17,7 +17,7 @@
     "dagre": "^0.8.5",
     "lucide-react": "^0.548.0",
     "multer": "^2.0.2",
-    "next": "15.5.5",
+    "next": "16.1.6",
     "next-auth": "5.0.0-beta.29",
     "next-connect": "^1.0.0",
     "react": "19.1.0",
