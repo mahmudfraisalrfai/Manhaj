@@ -120,9 +120,8 @@ export default function Navbar() {
                   </div>
                 </div>
 
-                {/* زر تسجيل الخروج */}
                 <button
-                  onClick={() => signOut()}
+                  onClick={() => signOut({ callbackUrl: '/auth/signin' })}
                   className="flex items-center text-gray-500 hover:text-gray-700 px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200"
                 >
                   <LogoutIcon className="ml-2 w-4 h-4" />
@@ -195,7 +194,7 @@ export default function Navbar() {
                   <button
                     onClick={() => {
                       setIsMobileMenuOpen(false);
-                      signOut();
+                      signOut({ callbackUrl: '/auth/signin' });
                     }}
                     className="flex items-center w-full text-right px-3 py-2 text-red-600 hover:bg-red-50 rounded-md text-base font-medium transition-colors duration-200"
                   >
